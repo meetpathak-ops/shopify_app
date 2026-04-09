@@ -1,4 +1,5 @@
 import {
+  Page,
   IndexTable,
   LegacyCard,
   IndexFilters,
@@ -66,6 +67,7 @@ export default function UsageLogsAdvanced() {
     "Processing",
     "Failed",
   ]);
+
   const [selectedTab, setSelectedTab] = useState(0);
 
   const tabs = tabsList.map((item, index) => ({
@@ -86,8 +88,15 @@ export default function UsageLogsAdvanced() {
   const [queryValue, setQueryValue] = useState("");
   const [status, setStatus] = useState([]);
 
-  const handleQueryChange = useCallback((value) => setQueryValue(value), []);
-  const handleStatusChange = useCallback((value) => setStatus(value), []);
+  const handleQueryChange = useCallback(
+    (value) => setQueryValue(value),
+    []
+  );
+
+  const handleStatusChange = useCallback(
+    (value) => setStatus(value),
+    []
+  );
 
   const handleClearAll = useCallback(() => {
     setQueryValue("");
@@ -99,22 +108,27 @@ export default function UsageLogsAdvanced() {
   const filteredOrders = useMemo(() => {
     let data = [...allOrders];
 
-    // Search
     if (queryValue) {
       data = data.filter(
         (item) =>
-          item.customer.toLowerCase().includes(queryValue.toLowerCase()) ||
-          item.product.toLowerCase().includes(queryValue.toLowerCase()) ||
-          item.id.toLowerCase().includes(queryValue.toLowerCase())
+          item.customer
+            .toLowerCase()
+            .includes(queryValue.toLowerCase()) ||
+          item.product
+            .toLowerCase()
+            .includes(queryValue.toLowerCase()) ||
+          item.id
+            .toLowerCase()
+            .includes(queryValue.toLowerCase())
       );
     }
 
-    // Status filter
     if (status.length > 0) {
-      data = data.filter((item) => status.includes(item.status));
+      data = data.filter((item) =>
+        status.includes(item.status)
+      );
     }
 
-    // Tab filter
     if (selectedTab !== 0) {
       data = data.filter(
         (item) => item.status === tabsList[selectedTab]
@@ -130,15 +144,21 @@ export default function UsageLogsAdvanced() {
     { label: "Date (Oldest)", value: "date asc" },
   ];
 
-  const [sortSelected, setSortSelected] = useState(["date desc"]);
+  const [sortSelected, setSortSelected] = useState([
+    "date desc",
+  ]);
 
   const sortedOrders = useMemo(() => {
     let sorted = [...filteredOrders];
 
     if (sortSelected[0] === "date asc") {
-      sorted.sort((a, b) => new Date(a.date) - new Date(b.date));
+      sorted.sort(
+        (a, b) => new Date(a.date) - new Date(b.date)
+      );
     } else {
-      sorted.sort((a, b) => new Date(b.date) - new Date(a.date));
+      sorted.sort(
+        (a, b) => new Date(b.date) - new Date(a.date)
+      );
     }
 
     return sorted;
@@ -168,6 +188,7 @@ export default function UsageLogsAdvanced() {
   ];
 
   const appliedFilters = [];
+
   if (status.length > 0) {
     appliedFilters.push({
       key: "status",
@@ -182,8 +203,11 @@ export default function UsageLogsAdvanced() {
     plural: "usage logs",
   };
 
-  const { selectedResources, allResourcesSelected, handleSelectionChange } =
-    useIndexResourceState(sortedOrders);
+  const {
+    selectedResources,
+    allResourcesSelected,
+    handleSelectionChange,
+  } = useIndexResourceState(sortedOrders);
 
   const rowMarkup = sortedOrders.map(
     ({ id, customer, product, quality, status, date }, index) => (
@@ -194,7 +218,9 @@ export default function UsageLogsAdvanced() {
         position={index}
       >
         <IndexTable.Cell>
-          <Text fontWeight="bold">{id}</Text>
+          <Text as="span" fontWeight="semibold">
+            {id}
+          </Text>
         </IndexTable.Cell>
 
         <IndexTable.Cell>{customer}</IndexTable.Cell>
@@ -225,51 +251,58 @@ export default function UsageLogsAdvanced() {
   const { mode, setMode } = useSetIndexFiltersMode();
 
   return (
-    <LegacyCard>
-      <IndexFilters
-        queryValue={queryValue}
-        queryPlaceholder="Search logs..."
-        onQueryChange={handleQueryChange}
-        onQueryClear={() => setQueryValue("")}
-        sortOptions={sortOptions}
-        sortSelected={sortSelected}
-        onSort={setSortSelected}
-        tabs={tabs}
-        selected={selectedTab}
-        onSelect={setSelectedTab}
-        canCreateNewView
-        onCreateNewView={onCreateNewView}
-        filters={filters}
-        appliedFilters={appliedFilters}
-        onClearAll={handleClearAll}
-        primaryAction={{
-          type: "save-as",
-          onAction: onCreateNewView,
-        }}
-        cancelAction={{ onAction: () => {} }}
-        mode={mode}
-        setMode={setMode}
-      />
+    <Page
+      title="Usage Logs"
+      subtitle="Detailed log of all virtual try-on requests"
+    >
+      <LegacyCard>
+        <IndexFilters
+          queryValue={queryValue}
+          queryPlaceholder="Search logs..."
+          onQueryChange={handleQueryChange}
+          onQueryClear={() => setQueryValue("")}
+          sortOptions={sortOptions}
+          sortSelected={sortSelected}
+          onSort={setSortSelected}
+          tabs={tabs}
+          selected={selectedTab}
+          onSelect={setSelectedTab}
+          canCreateNewView
+          onCreateNewView={onCreateNewView}
+          filters={filters}
+          appliedFilters={appliedFilters}
+          onClearAll={handleClearAll}
+          primaryAction={{
+            type: "save-as",
+            onAction: onCreateNewView,
+          }}
+          cancelAction={{ onAction: () => {} }}
+          mode={mode}
+          setMode={setMode}
+        />
 
-      <IndexTable
-        condensed={useBreakpoints().smDown}
-        resourceName={resourceName}
-        itemCount={sortedOrders.length}
-        selectedItemsCount={
-          allResourcesSelected ? "All" : selectedResources.length
-        }
-        onSelectionChange={handleSelectionChange}
-        headings={[
-          { title: "ID" },
-          { title: "Customer" },
-          { title: "Product" },
-          { title: "Quality" },
-          { title: "Status" },
-          { title: "Date" },
-        ]}
-      >
-        {rowMarkup}
-      </IndexTable>
-    </LegacyCard>
+        <IndexTable
+          condensed={useBreakpoints().smDown}
+          resourceName={resourceName}
+          itemCount={sortedOrders.length}
+          selectedItemsCount={
+            allResourcesSelected
+              ? "All"
+              : selectedResources.length
+          }
+          onSelectionChange={handleSelectionChange}
+          headings={[
+            { title: "ID" },
+            { title: "Customer" },
+            { title: "Product" },
+            { title: "Quality" },
+            { title: "Status" },
+            { title: "Date" },
+          ]}
+        >
+          {rowMarkup}
+        </IndexTable>
+      </LegacyCard>
+    </Page>
   );
 }
