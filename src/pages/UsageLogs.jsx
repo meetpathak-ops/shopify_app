@@ -275,8 +275,14 @@ export default function UsageLogsAdvanced() {
           primaryAction={{
             type: "save-as",
             onAction: onCreateNewView,
+            disabled: false,
+            loading: false,
           }}
-          cancelAction={{ onAction: () => {} }}
+          cancelAction={{
+            onAction: handleClearAll,
+            disabled: false,
+            loading: false,
+          }}
           mode={mode}
           setMode={setMode}
         />
